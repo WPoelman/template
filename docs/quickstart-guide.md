@@ -28,7 +28,7 @@ If a project is small enough, it's probably fine to use [`argparse`](https://doc
 ### Working with slurm
 
 Most compute clusters run on [`slurm`](https://slurm.schedmd.com/overview.html), a workload manager. You submit 'jobs' (something to compute) that are put in a queue and picked up and ran once there's enough compute available for what you requested. If you've provided your email, you can be notified if the job has started, completed successfully, failed, etc.
-Most [tutorials](https://docs.vscentrum.be/jobs/job_submission.html) show how to make `sbatch` scripts by hand, these are bash-like scripts that describe what to do in your job and what's required for them to run. This is fine for one-off jobs, but for larger scale setups, this becomes cumbersome. This is where a package like [`submitit`](https://github.com/facebookincubator/submitit) comes in handy. It allows you to programmatically (i.e., from within Python) submit and monitor jobs. It will automatically create `sbatch` scripts for you and submit the job. Combined with `hydra`, you can, for instance, create configs for different clusters and just swap out the config, while the rest stays the same. I've added specific hydra configs for `submitit` that correspond to the partitions available on the VSC.
+Most [tutorials](https://docs.vscentrum.be/jobs/job_submission.html) show how to make `sbatch` scripts by hand, these are bash-like scripts that describe what to do in your job and what's required for them to run. This is fine for one-off jobs, but for larger scale setups, this becomes cumbersome. This is where a package like [`submitit`](https://github.com/facebookincubator/submitit) comes in handy. It allows you to programmatically (i.e., from within Python) submit and monitor jobs. It will automatically create `sbatch` scripts for you and submit the job from within the currently active Python environment. Combined with `hydra`, you can use configs for different clusters and just swap out the config, while the rest stays the same. I've added specific hydra configs for `submitit` that correspond to the partitions available on the VSC.
 
 ### Weights and Biases
 
@@ -84,3 +84,10 @@ Naturally, you can deviate from this workflow, but I recommend to first get this
 
 * Always *over*estimate how long a job will take by ~25% (or adding a couple hours for longer jobs). You never know what will happen (timeouts, retries, etc.); better safe than sorry. If your job finishes early, the 'extra' time requested will not be deducted from your credits, so apart from (possibly) longer queue times, there's not really a downside to doing this.
 * If you run into storage issues, switch the huggingface cache folder location to `$VSC_SCRATCH` instead of `$VSC_HOME`. For more information, check the VSC [storage documentation](https://docs.vscentrum.be/data/storage_locations.html) and the [huggingface documentation](https://huggingface.co/docs/datasets/en/cache).
+
+## TO ADD
+
+* Hydra example
+* Submitit example
+* Describe testing
+* Folder structure recommended practices
