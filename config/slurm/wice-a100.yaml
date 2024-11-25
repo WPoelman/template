@@ -1,0 +1,10 @@
+slurm_partition: gpu_a100
+slurm_time: "24:00:00"
+slurm_additional_parameters:
+  clusters: wice
+  account:
+  nodes: 1
+  cpus_per_gpu: 18
+  gpus_per_node: 1
+  mail_type: "BEGIN,END,FAIL"
+  mail_user: ""
