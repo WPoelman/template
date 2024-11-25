@@ -82,5 +82,5 @@ Naturally, you can deviate from this workflow, but I recommend to first get this
 
 ## Miscellaneous
 
-* Always *over*estimate how long a job will take by ~25% (or adding a couple hours for longer jobs). You never know what will happen (timeouts, retries, etc.); better safe than sorry. If your job finishes early, the 'extra' time requested will not be deducted from your credits, so apart from longer queue times, there's not really a downside to doing this.
-* If you run into storage issues, switch the huggingface cache folder location to `$VSC_SCRATCH` instead of `$VSC_HOME`. For more information, check the [documentation](https://docs.vscentrum.be/data/storage_locations.html).
+* Always *over*estimate how long a job will take by ~25% (or adding a couple hours for longer jobs). You never know what will happen (timeouts, retries, etc.); better safe than sorry. If your job finishes early, the 'extra' time requested will not be deducted from your credits, so apart from (possibly) longer queue times, there's not really a downside to doing this.
+* If you run into storage issues, switch the huggingface cache folder location to `$VSC_SCRATCH` instead of `$VSC_HOME`. For more information, check the VSC [storage documentation](https://docs.vscentrum.be/data/storage_locations.html) and the [huggingface documentation](https://huggingface.co/docs/datasets/en/cache).
