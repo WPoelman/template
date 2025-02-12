@@ -33,7 +33,7 @@ Most [tutorials](https://docs.vscentrum.be/jobs/job_submission.html) show how to
 This example submits a 10 minute job to an A100 debug node on the WICE cluster.
 You can use the configs listed [here](../config/slurm/), or put it in manually:
 
-```{python}
+```python
 import submitit
 
 def expensive_function(a, b):
