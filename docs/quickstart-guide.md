@@ -30,6 +30,42 @@ If a project is small enough, it's probably fine to use [`argparse`](https://doc
 Most compute clusters run on [`slurm`](https://slurm.schedmd.com/overview.html), a workload manager. You submit 'jobs' (something to compute) that are put in a queue and picked up and ran once there's enough compute available for what you requested. If you've provided your email, you can be notified if the job has started, completed successfully, failed, etc.
 Most [tutorials](https://docs.vscentrum.be/jobs/job_submission.html) show how to make `sbatch` scripts by hand, these are bash-like scripts that describe what to do in your job and what's required for them to run. This is fine for one-off jobs, but for larger scale setups, this becomes cumbersome. This is where a package like [`submitit`](https://github.com/facebookincubator/submitit) comes in handy. It allows you to programmatically (i.e., from within Python) submit and monitor jobs. It will automatically create `sbatch` scripts for you and submit the job from within the currently active Python environment. Combined with `hydra`, you can use configs for different clusters and just swap out the config, while the rest stays the same. I've added specific hydra configs for `submitit` that correspond to the partitions available on the VSC.
 
+This example submits a 10 minute job to an A100 debug node on the WICE cluster.
+You can use the configs listed [here](../config/slurm/), or put it in manually:
+
+```{python}
+import submitit
+
+def expensive_function(a, b):
+   return a + b
+
+# Either define 'manually' or read in from yaml or Hydra:
+parameters = {
+   "slurm_partition": "gpu_a100_debug",
+   "slurm_time": "00:10:00",
+   "slurm_job_name": "<experiment-id>", # Put something informative here, it helps tracking down issues easier
+   "slurm_additional_parameters": {
+      "clusters": "wice",
+      "account": "<your account>", # Your VSC account
+      "nodes": 1,
+      "cpus_per_gpu": 64,
+      "gpus_per_node": 1,
+      "mail_type": "BEGIN,END,FAIL",
+      "mail_user": "<your email>", # for notifications specified above
+   },
+}
+
+# All logs and slurm files will be stored in this folder
+executor = submitit.AutoExecutor(folder="experiment_folder")
+executor.update_parameters(**parameters)
+
+job = executor.submit(expensive_function, 5, 7)
+# This waits for completion and returns output, often not a good idea with long jobs,
+# then you can just let this script finish.
+output = job.result()
+assert output == 12  # computed in the cluster
+```
+
 ### Weights and Biases
 
 To keep track of machine learning experiments, [`wandb`](https://wandb.ai/site/) has become a standard tool. If you intend to run experiments on the VSC, I recommend to make a free `wandb` account, and use it to log some common statistics like training losses and performance metrics (train and validation). This helps a lot in knowing what's happening (and if there's something happening), to catch training errors early and to keep track of what you've tried.
