@@ -66,6 +66,43 @@ output = job.result()
 assert output == 12  # computed in the cluster
 ```
 
+### Working with slurm part 2
+
+If you want to go even further and define grids of jobs all from within Python, you can try [planit](https://github.com/WPoelman/planit).
+This library handles dependencies between jobs for you:
+
+```python
+import logging
+
+import submitit
+
+from planit import Parallel, Plan, Chain, SlurmArgs, Step
+
+GPU = SlurmArgs(time="02:00:00", partition="gpu_a100", gpus_per_node=1, cpus_per_gpu=18)
+CPU = SlurmArgs(time="01:00:00", partition="batch", cpus_per_task=8)
+
+plan = Plan("experiment",
+    # These are run one after another
+    Chain(
+        Step("download", CPU, download_data),
+        Step("preprocess", CPU, preprocess),
+      # And these in parallel
+        Parallel(
+            Step("train_model_a", GPU, train, "model_a"),
+            Step("train_model_b", GPU, train, "model_b"),
+        ),
+        Step("evaluate", CPU, evaluate),
+    ),
+)
+
+plan.describe()
+
+executor = submitit.AutoExecutor(folder="slurm_logs")
+plan.submit(executor)
+```
+
+This is very powerful but also dangerous since you can easily submit hundreds of jobs!
+
 ### Weights and Biases
 
 To keep track of machine learning experiments, [`wandb`](https://wandb.ai/site/) has become a standard tool. If you intend to run experiments on the VSC, I recommend to make a free `wandb` account, and use it to log some common statistics like training losses and performance metrics (train and validation). This helps a lot in knowing what's happening (and if there's something happening), to catch training errors early and to keep track of what you've tried.
@@ -76,20 +113,20 @@ To keep track of machine learning experiments, [`wandb`](https://wandb.ai/site/)
 
 If possible, a Unix-based environment (MacOS, Linux) is *highly* recommended, as virtually all super computers and compute clusters are Unix-based and the switch between Windows and another environment can bring unneeded headaches. If you want to use Windows, install the [Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/install) or a [Virtual Machine](https://www.virtualbox.org/) with a Long Term Support version of Linux, such as [Ubuntu](https://ubuntu.com/download/desktop). All instructions here are intended for a Unix-based environment, native Windows *might* work, but there are no guarantees or promises as I've not tested it!
 
-To avoid versioning and dependency problems, make sure to isolate different projects. I recommend to install [`pyenv`](https://github.com/pyenv/pyenv) and [`pyenv-virtualenv`](https://github.com/pyenv/pyenv-virtualenv) as they are easy to set up and fast. Conda is a popular alternative, and it's recommended to use it if you intend to run jobs on the VSC, but it's quite heavy and slow. It's personal preference, but I like to use `pyenv` locally. Using Conda everywhere is a sane alternative as well.
+To avoid versioning and dependency problems, make sure to isolate different projects; `uv` takes care of this for you.
 
 To make your life easier, I generally recommend to use an automation framework like `pre-commit` (or shell scripts or  `make` if you want to roll your own). These types of frameworks can take care of checking your code for common mistakes and fix many things automatically. They also help to prevent common git errors from happening, such as adding private keys or accidentally committing enormous files.
 
 ### VSC
 
-On the VSC, it's best to use Conda as it includes a lot of things out of the box. For a good reference on Conda, check the VSC documentation [here](https://docs.vscentrum.be/software/python_package_management.html#install-python-packages-using-conda).
+On the VSC, you can use `uv` for almost everything. If you run into trouble, you can instead use Conda as it includes a lot of things out of the box. For a good reference on Conda, check the VSC documentation [here](https://docs.vscentrum.be/software/python_package_management.html#install-python-packages-using-conda).
 
 ## Starting a project
 
 I recommend to use this template repository: <https://github.com/WPoelman/template>. It includes the following:
 
 * A package structure for a Python project.
-* Instructions for `pyenv` and how to automatically select the correct env for your project.
+* Instructions for `uv`.
 * A skeleton setup of `pre-commit` with some common checks.
 
 To get started, click `Use this template` and create a new repository. Clone this repository onto your local machine and follow the instructions listed in the `README.md` of the template.
@@ -98,7 +135,7 @@ To get started on the VSC, you need to do the following steps (just once):
 
 1. Get access, as described above.
 2. SSH into the VSC.
-3. Set up Conda and create an environment for your project.
+3. Set up `uv` and/or Conda.
 4. Clone your git repository.
 5. Install your dependencies and package.
 
@@ -120,10 +157,3 @@ Naturally, you can deviate from this workflow, but I recommend to first get this
 
 * Always *over*estimate how long a job will take by ~25% (or adding a couple hours for longer jobs). You never know what will happen (timeouts, retries, etc.); better safe than sorry. If your job finishes early, the 'extra' time requested will not be deducted from your credits, so apart from (possibly) longer queue times, there's not really a downside to doing this.
 * If you run into storage issues, switch the huggingface cache folder location to `$VSC_SCRATCH` instead of `$VSC_HOME`. For more information, check the VSC [storage documentation](https://docs.vscentrum.be/data/storage_locations.html) and the [huggingface documentation](https://huggingface.co/docs/datasets/en/cache).
-
-## TO ADD
-
-* Hydra example
-* Submitit example
-* Describe testing
-* Folder structure recommended practices
